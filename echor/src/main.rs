@@ -6,6 +6,7 @@ fn main() {
         .about("echo command using rust")
         .arg(
             Arg::new("text")
+                .allow_invalid_utf8(true)
                 .value_name("TEXT")
                 .help("Input text")
                 .required(true)
@@ -18,5 +19,9 @@ fn main() {
                 .short('n'),
         )
         .get_matches();
-    println!("{:?}", matches);
+
+    let text = matches.values_of_lossy("text").unwrap();
+    let omit_newline = matches.is_present("omit newline");
+    print!("{}{}", text.join(" "), if omit_newline { "" } else { "\n" });
+    //  println!("{:#?}", matches);
 }
