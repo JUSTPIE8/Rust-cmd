@@ -19,20 +19,23 @@ pub fn get_args() -> MyResult<Config> {
                 .allow_invalid_utf8(true)
                 .value_name("FILE NAME")
                 .help("input file names for cat command")
-                .required(true)
+                .default_value("-")
                 .min_values(1),
         )
         .arg(
             Arg::new("line_number")
                 .help("print line numbers space count")
                 .takes_value(false)
-                .short('n'),
+                .short('n')
+                .long("number")
+                .conflicts_with("line_number_nonblank"),
         )
         .arg(
             Arg::new("line_number_nonblank")
                 .help("print with line number only for non blank lines")
                 .takes_value(false)
-                .short('b'),
+                .short('b')
+                .long("number_non_blank"),
         )
         .get_matches();
     let files = matches.values_of_lossy("files").unwrap();
@@ -46,7 +49,9 @@ pub fn get_args() -> MyResult<Config> {
 }
 
 pub fn run(config: Config) -> MyResult<()> {
-    dbg!(config);
-    println!("Hello world");
+    dbg!(&config);
+    for filename in config.files {
+        println!("{}", filename)
+    }
     Ok(())
 }
