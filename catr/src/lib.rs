@@ -52,6 +52,9 @@ pub fn get_args() -> MyResult<Config> {
     })
 }
 
+//opening a file if no args is provided input is taken from stdin
+//BufRead is a trait with functions for reading efficiently lik readline
+//bufreader  applies BufRead trait to parameters
 fn open(filename: &str) -> MyResult<Box<dyn BufRead>> {
     match filename {
         "-" => Ok(Box::new(BufReader::new(io::stdin()))),
@@ -60,9 +63,35 @@ fn open(filename: &str) -> MyResult<Box<dyn BufRead>> {
 }
 
 pub fn run(config: Config) -> MyResult<()> {
-    dbg!(&config);
+    /*  dbg!(&config);
     for filename in config.files {
         println!("{}", filename)
+    }*/
+    for filename in config.files {
+        match open(&filename) {
+            Err(err) => eprintln!("failed to open {}:{}", filename, err),
+            Ok(mut res) => {
+                let mut last_num = 0;
+
+                for (line_num, lines) in res.lines().enumerate() {
+                    let line = lines.unwrap();
+
+                    if config.number_lines {
+                        println!("{:>6}\t{}", line_num + 1, line);
+                    } else if config.number_nonblank_lines {
+                        if !line.is_empty() {
+                            last_num += 1;
+
+                            println!("{:>6}\t{}", last_num, line);
+                        } else {
+                            println!();
+                        }
+                    } else {
+                        println!("{}", line);
+                    }
+                }
+            }
+        }
     }
     Ok(())
 }
