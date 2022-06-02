@@ -70,7 +70,7 @@ pub fn run(config: Config) -> MyResult<()> {
     for filename in config.files {
         match open(&filename) {
             Err(err) => eprintln!("failed to open {}:{}", filename, err),
-            Ok(mut res) => {
+            Ok(res) => {
                 let mut last_num = 0;
 
                 for (line_num, lines) in res.lines().enumerate() {
