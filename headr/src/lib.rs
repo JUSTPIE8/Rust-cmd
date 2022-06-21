@@ -68,18 +68,47 @@ fn parse_int(num: &str) -> MyResult<usize> {
         _ => Err(From::from(num)),
     }
 }
-
+//opening file
 fn open(filename: &str) -> MyResult<Box<dyn BufRead>> {
     match filename {
         "-" => Ok(Box::new(BufReader::new(io::stdin()))),
         _ => Ok(Box::new(BufReader::new(File::open(filename)?))),
     }
 }
+
+//running file
 pub fn run(config: Config) -> MyResult<()> {
-    for filename in config.files {
+    let num_files = config.files.len();
+
+    //iterating over each files
+    for (file_num, filename) in config.files.iter().enumerate() {
         match open(&filename) {
             Err(err) => eprintln!("{}:{}", filename, err),
-            Ok(_file) => println!("opened {}", filename),
+            Ok(mut file) => {
+                if num_files > 1 {
+                    println!("{}==>{}<==", if file_num > 0 { "\n" } else { "" }, filename);
+                }
+
+                //if byte flag is provided
+
+                if let Some(num_bytes) = config.bytes {
+                    let mut handle = file.take(num_bytes as u64);
+                    let mut buffer = vec![0; num_bytes];
+                    let n = handle.read(&mut buffer)?;
+
+                    println!("{}", String::from_utf8_lossy(&buffer));
+                } else {
+                    let mut line = String::new();
+                    for _ in 0..config.lines {
+                        let bytes = file.read_line(&mut line)?;
+                        if bytes == 0 {
+                            break;
+                        }
+                        print!("{}", line);
+                        line.clear();
+                    }
+                }
+            }
         }
     }
     Ok(())
